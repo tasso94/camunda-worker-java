@@ -134,7 +134,7 @@ public class CamundaClientBuilder {
 
   protected void initClientCommandExecutor() {
     if(clientCommandExecutor == null) {
-      clientCommandExecutor = new ClientCommandExecutor(endpointUrl, clientId, 0, 10, httpClient, objectMapper, valueSerializers);
+      clientCommandExecutor = new ClientCommandExecutor(endpointUrl, clientId, asyncResponseTimeout, maxTasks, httpClient, objectMapper, valueSerializers);
     }
   }
 
