@@ -39,7 +39,7 @@
       <outgoing>sid-CBBF786D-5FD8-4832-AAEC-F6A61EC39274</outgoing>
       <messageEventDefinition id="sid-bc7aaa73-9ced-4c49-90b3-69cfa98d0ad0" messageRef="sid-914583D1-BCE9-484F-84F2-990BD723791E"/>
     </startEvent>
-    <serviceTask id="sid-F2EC54E7-D69F-466B-96A3-78385F1DB3CB" camunda:type="external" camunda:topicName="reserveOrderItems" name="Reserve Order Items">
+    <serviceTask id="sid-F2EC54E7-D69F-466B-96A3-78385F1DB3CB" camunda:type="external" camunda:topic="reserveOrderItems" name="Reserve Order Items">
       <incoming>sid-CBBF786D-5FD8-4832-AAEC-F6A61EC39274</incoming>
       <outgoing>SequenceFlow_2</outgoing>
     </serviceTask>
@@ -57,7 +57,7 @@
       <outgoing>sid-1AD2E3C3-CB73-48D4-8FA6-D59B18DAB304</outgoing>
     </exclusiveGateway>
     <sequenceFlow id="sid-1AD2E3C3-CB73-48D4-8FA6-D59B18DAB304" sourceRef="sid-94C89724-EDD4-48D9-99AF-061E502E79E7" targetRef="processPaymentService"/>
-    <serviceTask id="processPaymentService" camunda:type="external" camunda:topicName="payment" name="Process Payment">
+    <serviceTask id="processPaymentService" camunda:type="external" camunda:topic="payment" name="Process Payment">
       <incoming>sid-1AD2E3C3-CB73-48D4-8FA6-D59B18DAB304</incoming>
       <outgoing>sid-598E5FAA-5922-49DD-8E82-C6BFCA30CA58</outgoing>
     </serviceTask>
@@ -112,12 +112,12 @@
       <outgoing>sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E</outgoing>
     </intermediateThrowEvent>
     <sequenceFlow id="sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E" sourceRef="sid-0FE364B3-F436-4FFB-919C-F0C8B3483D77" targetRef="sid-95888210-337C-4C03-BC3D-2B60D69B6210"/>
-    <serviceTask id="sid-95888210-337C-4C03-BC3D-2B60D69B6210" camunda:type="external" camunda:topicName="adjustInventory" name="Adjust Inventory Data">
+    <serviceTask id="sid-95888210-337C-4C03-BC3D-2B60D69B6210" camunda:type="external" camunda:topic="adjustInventory" name="Adjust Inventory Data">
       <incoming>sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E</incoming>
       <outgoing>sid-210A1C4D-85A5-45C2-88A6-551F4807D90D</outgoing>
     </serviceTask>
     <sequenceFlow id="sid-210A1C4D-85A5-45C2-88A6-551F4807D90D" sourceRef="sid-95888210-337C-4C03-BC3D-2B60D69B6210" targetRef="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04"/>
-    <serviceTask id="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04" camunda:type="external" camunda:topicName="shipment"  name="Trigger Shipment">
+    <serviceTask id="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04" camunda:type="external" camunda:topic="shipment"  name="Trigger Shipment">
       <incoming>sid-210A1C4D-85A5-45C2-88A6-551F4807D90D</incoming>
       <outgoing>sid-947F3EBE-B6CF-436E-97E5-6DE3D1E903AC</outgoing>
     </serviceTask>
@@ -147,7 +147,7 @@
     <endEvent id="EndOrderCancelled2" name="Order Cancelled">
       <incoming>SequenceFlow_5</incoming>
     </endEvent>
-    <serviceTask id="sid-382F031A-2A5F-474D-A986-A148D42F4662" camunda:type="external" camunda:topicName="releaseOrder" name="Release &#xA;Order Item Reservation">
+    <serviceTask id="sid-382F031A-2A5F-474D-A986-A148D42F4662" camunda:type="external" camunda:topic="releaseOrder" name="Release &#xA;Order Item Reservation">
       <incoming>sid-8D53F495-8722-495C-8331-DF1C34AC364B</incoming>
       <outgoing>SequenceFlow_5</outgoing>
     </serviceTask>

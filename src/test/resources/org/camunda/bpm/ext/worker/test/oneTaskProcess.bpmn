@@ -4,7 +4,7 @@
     <bpmn2:startEvent id="StartEvent_1">
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:serviceTask id="ServiceTask_1" name="The Task" camunda:type="external" camunda:topicName="exampleTopicName">
+    <bpmn2:serviceTask id="ServiceTask_1" name="The Task" camunda:type="external" camunda:topic="exampleTopicName">
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
     </bpmn2:serviceTask>

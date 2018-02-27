@@ -12,22 +12,20 @@
  */
 package org.camunda.bpm.ext.sdk.impl.workers;
 
-import java.util.Collections;
-import java.util.Map;
-
-import org.apache.http.client.methods.HttpPost;
-import org.camunda.bpm.engine.impl.core.variable.VariableMapImpl;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.impl.VariableMapImpl;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.bpm.ext.sdk.ClientLogger;
 import org.camunda.bpm.ext.sdk.TaskContext;
 import org.camunda.bpm.ext.sdk.Worker;
-import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.ClientPostComand;
-import org.camunda.bpm.ext.sdk.impl.dto.CompleteTaskRequestDto;
-import org.camunda.bpm.ext.sdk.impl.dto.TaskFailedRequestDto;
+import org.camunda.bpm.ext.sdk.impl.dto.CompleteExternalTaskRequestDto;
+import org.camunda.bpm.ext.sdk.impl.dto.ExternalTaskFailureRequestDto;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Daniel Meyer
@@ -47,41 +45,42 @@ public class WorkerTask implements TaskContext, Runnable {
   protected Worker worker;
 
   public void complete() {
-    complete(Collections.<String, Object>emptyMap());
+    complete(Collections.emptyMap(), Collections.emptyMap());
   }
 
-  public void complete(final Map<String, Object> variables) {
-    clientCommandExecutor.executePost("/external-task/"+taskId+"/complete", new ClientPostComand<Void>() {
-      public Void execute(ClientCommandContext ctc, HttpPost post) {
+  public void complete(Map<String, Object> variables, Map<String, Object> localVariables) {
+    clientCommandExecutor.executePost("/external-task/" + taskId + "/complete", (ClientPostComand<Void>) (ctc, post) -> {
 
-        CompleteTaskRequestDto reqDto = new CompleteTaskRequestDto();
-        reqDto.setConsumerId(ctc.getClientId());
-        reqDto.setVariables(ctc.writeVariables(Variables.fromMap(variables)));
+      CompleteExternalTaskRequestDto reqDto = new CompleteExternalTaskRequestDto();
+      reqDto.setWorkerId(ctc.getClientId());
+      reqDto.setVariables(ctc.writeVariables(Variables.fromMap(variables)));
+      reqDto.setLocalVariables(ctc.writeVariables(Variables.fromMap(localVariables)));
 
-        post.setEntity(ctc.writeObject(reqDto));
+      post.setEntity(ctc.writeObject(reqDto));
 
-        ctc.execute(post);
+      ctc.execute(post);
 
-        return null;
-      }
+      return null;
     });
   }
 
-  public void taskFailed() {
-    taskFailed(null);
+  public void handleFailure() {
+    handleFailure(null, 0, 0);
   }
 
-  public void taskFailed(final String errorMessage) {
-    clientCommandExecutor.executePost("/external-task/"+taskId+"/failed", new ClientPostComand<Void>() {
-      public Void execute(ClientCommandContext ctc, HttpPost post) {
+  public void handleFailure(String errorMessage, int retries, long retryTimeout) {
+    clientCommandExecutor.executePost("/external-task/" + taskId + "/failure", (ClientPostComand<Void>) (ctc, post) -> {
 
-        TaskFailedRequestDto reqDto = new TaskFailedRequestDto(ctc.getClientId(), errorMessage);
-        post.setEntity(ctc.writeObject(reqDto));
+      ExternalTaskFailureRequestDto reqDto = new ExternalTaskFailureRequestDto();
+      reqDto.setRetries(retries);
+      reqDto.setRetryTimeout(retryTimeout);
+      reqDto.setWorkerId(ctc.getClientId());
+      reqDto.setErrorMessage(errorMessage);
+      post.setEntity(ctc.writeObject(reqDto));
 
-        ctc.execute(post);
+      ctc.execute(post);
 
-        return null;
-      }
+      return null;
     });
   }
 
@@ -97,6 +96,7 @@ public class WorkerTask implements TaskContext, Runnable {
     return retreivedVariables;
   }
 
+  @SuppressWarnings("unchecked")
   public <T> T getVariable(String name) {
     return (T) retreivedVariables.get(name);
   }
@@ -116,17 +116,17 @@ public class WorkerTask implements TaskContext, Runnable {
     catch(Exception e){
       LOG.workerException(worker, e);
       // automatically fail the task
-      taskFailed(e.getMessage());
+      handleFailure(e.getMessage(), 0, 0);
     }
   }
 
-  public static WorkerTask from(LockedTaskDto lockedTaskDto, ClientCommandExecutor clientCommandExecutor, Worker worker) {
+  public static WorkerTask from(LockedExternalTaskDto lockedExternalTaskDto, ClientCommandExecutor clientCommandExecutor, Worker worker) {
     WorkerTask workerTask = new WorkerTask();
-    workerTask.taskId = lockedTaskDto.getId();
+    workerTask.taskId = lockedExternalTaskDto.getId();
     workerTask.clientCommandExecutor = clientCommandExecutor;
     workerTask.worker = worker;
     workerTask.retreivedVariables = clientCommandExecutor.getValueSerializers()
-        .readValues(lockedTaskDto.getVariables(), clientCommandExecutor.getObjectMapper());
+        .readValues(lockedExternalTaskDto.getVariables(), clientCommandExecutor.getObjectMapper());
     return workerTask;
   }
 

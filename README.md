@@ -60,5 +60,5 @@ public class MyApp {
 ## Features
 
 * *Efficient Threading & Multipoll*: single thread polling multiple topics at once delegating to a pool of worker threads
-* *Adaptive Polling with Exponential Backoff*: poller dynamically adjusts to avaiable work and backs off in case no work is available.
+* *Adaptive Polling with Exponential Backoff*: fetcher dynamically adjusts to avaiable work and backs off in case no work is available.
 

@@ -35,12 +35,12 @@ public interface TaskContext {
 
   void setVariable(String name, Object value);
 
-  void complete(final Map<String, Object> variables);
+  void complete(Map<String, Object> variables, Map<String, Object> localVariables);
 
   void complete();
 
-  void taskFailed(String errorMessage);
+  void handleFailure(String errorMessage, int retries, long retryTimeout);
 
-  void taskFailed();
+  void handleFailure();
 
 }

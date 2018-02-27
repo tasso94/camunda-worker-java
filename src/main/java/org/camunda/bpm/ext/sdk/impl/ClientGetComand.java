@@ -10,36 +10,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.dto;
+package org.camunda.bpm.ext.sdk.impl;
 
-import java.util.Map;
-
-import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
+import org.apache.http.client.methods.HttpGet;
 
 /**
  * @author Daniel Meyer
  *
  */
-public class CompleteTaskRequestDto {
+public interface ClientGetComand<T> {
 
-  protected String consumerId;
-
-  protected Map<String, TypedValueDto> variables;
-
-  public Map<String, TypedValueDto> getVariables() {
-    return variables;
-  }
-
-  public void setVariables(Map<String, TypedValueDto> variables) {
-    this.variables = variables;
-  }
-
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
-  }
-
-  public String getConsumerId() {
-    return consumerId;
-  }
+  T execute(ClientCommandContext ctc, HttpGet get);
 
 }

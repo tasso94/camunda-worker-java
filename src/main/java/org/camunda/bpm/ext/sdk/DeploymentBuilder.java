@@ -54,7 +54,7 @@ public class DeploymentBuilder {
     String filename = classpathResource;
     requestBuilder.addBinaryBody("resource-" + (++dataPartConter), inputStream, ContentType.APPLICATION_OCTET_STREAM, filename);
     return this;
-  };
+  }
 
   public DeploymentBuilder stringResource(String filename, String content) {
     ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());

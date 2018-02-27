@@ -30,7 +30,7 @@ import org.camunda.bpm.ext.sdk.impl.WorkerRegistrationImpl;
  * @author Daniel Meyer
  *
  */
-public class PollTasksRunnable implements Runnable {
+public class FetchAndLockTasksRunnable implements Runnable {
 
   private final static ClientLogger LOG = ClientLogger.LOGGER;
 
@@ -38,12 +38,10 @@ public class PollTasksRunnable implements Runnable {
 
   protected WorkerManager workerManager;
   protected ClientCommandExecutor commandExecutor;
-  protected BackoffStrategy backoffStrategy;
 
-  public PollTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor, BackoffStrategy backoffStrategy) {
+  public FetchAndLockTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor) {
     this.workerManager = workerManager;
     this.commandExecutor = commandExecutor;
-    this.backoffStrategy = backoffStrategy;
   }
 
   public void run() {
@@ -54,8 +52,8 @@ public class PollTasksRunnable implements Runnable {
 
   protected void acquire() {
     final List<WorkerRegistrationImpl> registrations = workerManager.getRegistrations();
-    final MultiPollRequestDto request = new MultiPollRequestDto();
-    final Map<String, Worker> workerMap = new HashMap<String, Worker>();
+    final FetchAndLockRequestDto request = new FetchAndLockRequestDto();
+    final Map<String, Worker> workerMap = new HashMap<>();
 
     request.clear();
     workerMap.clear();
@@ -74,67 +72,42 @@ public class PollTasksRunnable implements Runnable {
       }
 
       for (WorkerRegistrationImpl registration : registrations) {
-        request.topics.add(new PollInstructionDto(registration.getTopicName(),
-            registration.getLockTime(),
-            registration.getVariableNames()));
+        request.topics.add(new FetchExternalTaskTopicDto(registration.getTopicName(), registration.getLockDuration(), registration.getVariableNames()));
         workerMap.put(registration.getTopicName(), registration.getWorker());
       }
 
     }
 
-    int tasksAcquired = 0;
-
     try {
-      tasksAcquired = poll(request, workerMap);
+      fetchAndLock(request, workerMap);
     } catch(Exception e) {
       LOG.exceptionDuringPoll(e);
     }
-
-    if(tasksAcquired == 0) {
-      try {
-        // back-off
-        backoffStrategy.run();
-      } catch(InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    else {
-      backoffStrategy.reset();
-    }
   }
 
-  private int poll(final MultiPollRequestDto request, final Map<String, Worker> workerMap) {
-    if(workerMap.size() == 0) {
-      return 0;
-    }
-    return commandExecutor.executePost("/external-task/multi-poll", new ClientPostComand<Integer>() {
+  private void fetchAndLock(final FetchAndLockRequestDto request, final Map<String, Worker> workerMap) {
+    commandExecutor.executePost("/external-task/fetchAndLock", (ClientPostComand<Void>) (ClientCommandContext ctc, HttpPost post) -> {
+      request.setWorkerId(ctc.getClientId());
+      request.setMaxTasks(ctc.getMaxTasks());
+      request.setAsyncResponseTimeout(ctc.getAsyncResponseTimeout());
 
-      public Integer execute(ClientCommandContext ctc, HttpPost post) {
+      post.setEntity(ctc.writeObject(request));
 
-        request.setConsumerId(ctc.getClientId());
-        request.setMaxTasks(10);
-
-        post.setEntity(ctc.writeObject(request));
-
-        int tasksAcquired = 0;
-        try {
-          HttpResponse response = ctc.execute(post);
-          LockedTasksResponseDto lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedTasksResponseDto.class);
+      try {
+        HttpResponse response = ctc.execute(post);
+        LockedExternalTaskDto[] lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedExternalTaskDto[].class);
 
 
-          for (LockedTaskDto lockedTaskDto : lockedTasksResponseDto.getTasks()) {
+        for (LockedExternalTaskDto lockedExternalTaskDto : lockedTasksResponseDto) {
 
-            WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, workerMap.get(lockedTaskDto.getTopicName()));
-            workerManager.execute(task);
-            tasksAcquired++;
-          }
+          WorkerTask task = WorkerTask.from(lockedExternalTaskDto, commandExecutor, workerMap.get(lockedExternalTaskDto.getTopicName()));
+          workerManager.execute(task);
         }
-        catch(CamundaClientException e) {
-          LOG.unableToPoll(e);
-        }
-
-        return tasksAcquired;
+      } catch (CamundaClientException e) {
+        LOG.unableToPoll(e);
       }
+
+      return null;
     });
   }
 
@@ -144,8 +117,6 @@ public class PollTasksRunnable implements Runnable {
     synchronized (workerManager.getRegistrations()) {
       workerManager.getRegistrations().notifyAll();
     }
-    // or doing backoff
-    backoffStrategy.stopWait();
   }
 
 }

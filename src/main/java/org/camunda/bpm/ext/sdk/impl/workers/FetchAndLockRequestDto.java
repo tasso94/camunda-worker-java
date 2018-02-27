@@ -19,13 +19,15 @@ import java.util.List;
  * @author Daniel Meyer
  *
  */
-public class MultiPollRequestDto {
+public class FetchAndLockRequestDto {
 
   protected int maxTasks;
 
-  protected String consumerId;
+  protected String workerId;
 
-  protected List<PollInstructionDto> topics = new ArrayList<PollInstructionDto>();
+  protected long asyncResponseTimeout;
+
+  protected List<FetchExternalTaskTopicDto> topics = new ArrayList<FetchExternalTaskTopicDto>();
 
   public int getMaxTasks() {
     return maxTasks;
@@ -35,20 +37,28 @@ public class MultiPollRequestDto {
     this.maxTasks = maxTasks;
   }
 
-  public String getConsumerId() {
-    return consumerId;
+  public String getWorkerId() {
+    return workerId;
   }
 
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
+  public void setWorkerId(String workerId) {
+    this.workerId = workerId;
   }
 
-  public List<PollInstructionDto> getTopics() {
+  public List<FetchExternalTaskTopicDto> getTopics() {
     return topics;
   }
 
-  public void setTopics(List<PollInstructionDto> topics) {
+  public void setTopics(List<FetchExternalTaskTopicDto> topics) {
     this.topics = topics;
+  }
+
+  public long getAsyncResponseTimeout() {
+    return asyncResponseTimeout;
+  }
+
+  public void setAsyncResponseTimeout(long asyncResponseTimeout) {
+    this.asyncResponseTimeout = asyncResponseTimeout;
   }
 
   public void clear() {

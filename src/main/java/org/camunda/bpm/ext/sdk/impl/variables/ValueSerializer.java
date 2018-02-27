@@ -12,7 +12,7 @@
  */
 package org.camunda.bpm.ext.sdk.impl.variables;
 
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

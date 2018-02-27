@@ -27,9 +27,9 @@ public class WorkerRegistrationImpl implements WorkerRegistration {
 
   protected String topicName;
   protected Worker worker;
-  protected Integer lockTime;
+  protected long lockDuration;
   protected WorkerManager workerManager;
-  protected List<String> variableNames = new ArrayList<String>();
+  protected List<String> variableNames = new ArrayList<>();
 
   public WorkerRegistrationImpl(WorkerManager workerManager) {
     this.workerManager = workerManager;
@@ -63,12 +63,12 @@ public class WorkerRegistrationImpl implements WorkerRegistration {
     return worker;
   }
 
-  public Integer getLockTime() {
-    return lockTime;
+  public long getLockDuration() {
+    return lockDuration;
   }
 
-  public void setLockTime(Integer lockTime) {
-    this.lockTime = lockTime;
+  public void setLockDuration(long lockDuration) {
+    this.lockDuration = lockDuration;
   }
 
   public List<String> getVariableNames() {

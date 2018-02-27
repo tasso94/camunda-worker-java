@@ -12,15 +12,15 @@
  */
 package org.camunda.bpm.ext.sdk.impl.variables;
 
-import static org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers.*;
-
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.type.PrimitiveValueType;
 import org.camunda.bpm.engine.variable.value.PrimitiveValue;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers.toRestApiTypeName;
 
 /**
  * @author Daniel Meyer

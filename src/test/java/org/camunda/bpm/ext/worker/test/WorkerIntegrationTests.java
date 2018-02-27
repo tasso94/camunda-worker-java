@@ -101,7 +101,7 @@ public class WorkerIntegrationTests {
 
     WorkerRegistration registration = client.registerWorker()
       .topicName("exampleTopicName")
-      .lockTime(5000)
+      .lockDuration(5000)
       .worker(new CompletingWorker())
       .build();
 
@@ -124,7 +124,7 @@ public class WorkerIntegrationTests {
 
     WorkerRegistration registration = client.registerWorker()
       .topicName("exampleTopicName")
-      .lockTime(5000)
+      .lockDuration(5000)
       .worker(new CompletingWorker())
       .build();
 

@@ -12,21 +12,18 @@
  */
 package org.camunda.bpm.ext.sdk;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.UUID;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
-import org.camunda.bpm.ext.sdk.impl.workers.BackoffStrategy;
-import org.camunda.bpm.ext.sdk.impl.workers.SimpleBackoffStrategy;
 import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.UUID;
 
 /**
  * @author Daniel Meyer
@@ -36,16 +33,19 @@ public class CamundaClientBuilder {
 
   private final static ClientLogger LOG = ClientLogger.LOGGER;
 
+  protected String endpointUrl;
+  protected String clientId;
+
+  protected long asyncResponseTimeout;
+  protected int maxTasks;
+
   protected int numOfWorkerThreads = 4;
   protected int queueSize = 25;
-  protected BackoffStrategy backoffStrategy;
 
-  protected String endpointUrl;
   protected CloseableHttpClient httpClient;
   protected ClientCommandExecutor clientCommandExecutor;
   protected WorkerManager workerManager;
   protected ObjectMapper objectMapper;
-  protected String clientId;
   protected ValueSerializers valueSerializers;
 
   public CamundaClientBuilder() {
@@ -62,7 +62,17 @@ public class CamundaClientBuilder {
     return this;
   }
 
-  public CamundaClientBuilder consumerId(int numOfWorkerThreads) {
+  public CamundaClientBuilder asyncResponseTimeout(long asyncResponseTimeout) {
+    this.asyncResponseTimeout = asyncResponseTimeout;
+    return this;
+  }
+
+  public CamundaClientBuilder maxTasks(int maxTasks) {
+    this.maxTasks = maxTasks;
+    return this;
+  }
+
+  public CamundaClientBuilder workerThreads(int numOfWorkerThreads) {
     this.numOfWorkerThreads = numOfWorkerThreads;
     return this;
   }
@@ -83,7 +93,6 @@ public class CamundaClientBuilder {
 
   protected void init() {
     initClientId();
-    initBackoffStrategy();
     initObjectMapper();
     initValueSerializers();
     initHttpClient();
@@ -94,12 +103,6 @@ public class CamundaClientBuilder {
   protected void initValueSerializers() {
     if(valueSerializers == null) {
       valueSerializers = new ValueSerializers();
-    }
-  }
-
-  protected void initBackoffStrategy() {
-    if(backoffStrategy == null) {
-      backoffStrategy = new SimpleBackoffStrategy();
     }
   }
 
@@ -125,13 +128,13 @@ public class CamundaClientBuilder {
 
   protected void initWorkerManager() {
     if(this.workerManager == null) {
-      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize, backoffStrategy);
+      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize);
     }
   }
 
   protected void initClientCommandExecutor() {
     if(clientCommandExecutor == null) {
-      clientCommandExecutor = new ClientCommandExecutor(httpClient, endpointUrl, clientId, objectMapper, valueSerializers);
+      clientCommandExecutor = new ClientCommandExecutor(endpointUrl, clientId, 0, 10, httpClient, objectMapper, valueSerializers);
     }
   }
 

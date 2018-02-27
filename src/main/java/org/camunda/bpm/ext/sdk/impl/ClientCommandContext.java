@@ -40,15 +40,21 @@ public class ClientCommandContext {
 
   private final static ClientLogger LOG = ClientLogger.LOGGER;
 
+  protected String clientId;
+  protected long asyncResponseTimeout;
+  protected int maxTasks;
+
   protected HttpClient httpClient;
   protected ObjectMapper objectMapper;
-  protected String clientId;
   protected ValueSerializers valueSerializers;
 
-  public ClientCommandContext(HttpClient client, ObjectMapper objectMapper, String clientId, ValueSerializers valueSerializers) {
+  public ClientCommandContext(String clientId, long asyncResponseTimeout, int maxTasks, HttpClient client, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
+    this.clientId = clientId;
+    this.asyncResponseTimeout = asyncResponseTimeout;
+    this.maxTasks = maxTasks;
+
     this.httpClient = client;
     this.objectMapper = objectMapper;
-    this.clientId = clientId;
     this.valueSerializers = valueSerializers;
   }
 
@@ -97,7 +103,7 @@ public class ClientCommandContext {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      throw new CamundaClientException("Request "+req + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
+      throw new CamundaClientException("Request " + req + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
     }
 
     return response;
@@ -122,6 +128,14 @@ public class ClientCommandContext {
 
   public ValueSerializers getValueSerializers() {
     return valueSerializers;
+  }
+
+  public long getAsyncResponseTimeout() {
+    return asyncResponseTimeout;
+  }
+
+  public int getMaxTasks() {
+    return maxTasks;
   }
 
   public Map<String, TypedValueDto> writeVariables(VariableMap vars) {

@@ -12,8 +12,8 @@
  */
 package org.camunda.bpm.ext.sdk.impl.variables;
 
-import org.camunda.bpm.engine.impl.core.variable.value.NullValueImpl;
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.impl.value.NullValueImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.type.ValueType;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 

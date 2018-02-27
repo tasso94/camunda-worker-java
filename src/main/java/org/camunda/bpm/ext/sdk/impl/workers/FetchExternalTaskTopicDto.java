@@ -18,15 +18,15 @@ import java.util.List;
  * @author Daniel Meyer
  *
  */
-public class PollInstructionDto {
+public class FetchExternalTaskTopicDto {
 
   protected String topicName;
-  protected int lockTimeInSeconds;
+  protected long lockDuration;
   protected List<String> variableNames;
 
-  public PollInstructionDto(String topicName, int lockTime, List<String> variables) {
+  public FetchExternalTaskTopicDto(String topicName, long lockDuration, List<String> variables) {
     this.topicName = topicName;
-    this.lockTimeInSeconds = lockTime;
+    this.lockDuration = lockDuration;
     this.variableNames = variables;
   }
 
@@ -36,11 +36,11 @@ public class PollInstructionDto {
   public void setTopicName(String topicName) {
     this.topicName = topicName;
   }
-  public int getLockTimeInSeconds() {
-    return lockTimeInSeconds;
+  public long getLockDuration() {
+    return lockDuration;
   }
-  public void setLockTimeInSeconds(int lockTime) {
-    this.lockTimeInSeconds = lockTime;
+  public void setLockDuration(int lockTime) {
+    this.lockDuration = lockTime;
   }
   public List<String> getVariableNames() {
     return variableNames;

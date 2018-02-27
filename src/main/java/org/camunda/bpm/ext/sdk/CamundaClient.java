@@ -12,19 +12,24 @@
  */
 package org.camunda.bpm.ext.sdk;
 
-import java.nio.charset.Charset;
-import java.util.Map;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.ext.sdk.dto.ProcessInstanceResponseDto;
 import org.camunda.bpm.ext.sdk.dto.StartProcessInstanceDto;
 import org.camunda.bpm.ext.sdk.dto.StartProcessInstanceResponseDto;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.ClientPostComand;
+import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
+import org.camunda.bpm.ext.sdk.impl.workers.LockedExternalTaskDto;
 import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
+
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Meyer
@@ -54,6 +59,10 @@ public class CamundaClient {
 
   public DeploymentBuilder createDeployment() {
     return new DeploymentBuilder(commandExecutor);
+  }
+
+  public StartProcessInstanceResponseDto startProcessInstanceByKey(String key) {
+    return startProcessInstanceByKey(key, null);
   }
 
   public StartProcessInstanceResponseDto startProcessInstanceByKey(String key, final Map<String, Object> variables) {
@@ -88,6 +97,42 @@ public class CamundaClient {
   public void deleteDeployment(String deploymentId, boolean cascade) {
     commandExecutor.executeDelete("/deployment/"+deploymentId+(cascade ? "?cascade=true": ""));
   }
+
+  public ProcessInstanceResponseDto queryProcessInstanceById(String processInstanceId) {
+    return commandExecutor.executeGet("/process-instance/" +  processInstanceId, (ctc, get) -> {
+      HttpResponse response = ctc.execute(get);
+      return ctc.readObject(response.getEntity(), ProcessInstanceResponseDto.class);
+    });
+  }
+
+  public List<ProcessInstanceResponseDto> queryProcessInstanceByKey(String processDefinitionKey) {
+    return commandExecutor.executeGet("/process-instance/?processDefinitionKey=" +  processDefinitionKey, (ctc, get) -> {
+      HttpResponse response = ctc.execute(get);
+      return Arrays.asList(ctc.readObject(response.getEntity(), ProcessInstanceResponseDto[].class));
+    });
+  }
+
+  public List<LockedExternalTaskDto> queryExternalTasksByTopicName(String topicName) {
+    return commandExecutor.executeGet("/external-task/?topicName=" +  topicName, (ctc, get) -> {
+      HttpResponse response = ctc.execute(get);
+      return Arrays.asList(ctc.readObject(response.getEntity(), LockedExternalTaskDto[].class));
+    });
+  }
+
+  public List<LockedExternalTaskDto> queryExternalTaskLogsByTopicName(String topicName) {
+    return commandExecutor.executeGet("/history/external-task-log?topicName=" +  topicName, (ctc, get) -> {
+      HttpResponse response = ctc.execute(get);
+      return Arrays.asList(ctc.readObject(response.getEntity(), LockedExternalTaskDto[].class));
+    });
+  }
+
+  public List<TypedValueDto> queryHistoricVariableInstancesByProcessDefinitionKey(String processDefinitionKey) {
+    return commandExecutor.executeGet("/history/variable-instance?processDefinitionKey=" + processDefinitionKey, (ctc, get) -> {
+      HttpResponse response = ctc.execute(get);
+      return Arrays.asList(ctc.readObject(response.getEntity(), TypedValueDto[].class));
+    });
+  }
+
 
   public void close() {
     LOG.closing();

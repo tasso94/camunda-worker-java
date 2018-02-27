@@ -30,31 +30,29 @@ public class WorkerManager {
 
   private final static ClientLogger LOG = ClientLogger.LOGGER;
 
-  protected Thread pollerThread;
+  protected Thread fetcherThread;
 
-  protected PollTasksRunnable pollerRunnable;
+  protected FetchAndLockTasksRunnable fetcherRunnable;
 
-  protected List<WorkerRegistrationImpl> registrations = new ArrayList<WorkerRegistrationImpl>();
-
-  protected ArrayBlockingQueue<Runnable> workQueue;
+  protected List<WorkerRegistrationImpl> registrations = new ArrayList<>();
 
   protected ThreadPoolExecutor workerThreadPool;
 
-  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize, BackoffStrategy backoffStrategy) {
-    this.pollerRunnable = new PollTasksRunnable(this, commandExecutor, backoffStrategy);
+  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize) {
+    this.fetcherRunnable = new FetchAndLockTasksRunnable(this, commandExecutor);
 
-    workQueue = new ArrayBlockingQueue<Runnable>(queueSize);
+    ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(queueSize);
 
-    pollerThread = new Thread(pollerRunnable);
-    pollerThread.start();
+    fetcherThread = new Thread(fetcherRunnable);
+    fetcherThread.start();
 
     workerThreadPool = new ThreadPoolExecutor(1, numOfWorkerThreads, 10, TimeUnit.SECONDS, workQueue, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   public void close() {
-    pollerRunnable.exit();
+    fetcherRunnable.exit();
     try {
-      pollerThread.join();
+      fetcherThread.join();
     } catch (InterruptedException e) {
       e.printStackTrace();
     }

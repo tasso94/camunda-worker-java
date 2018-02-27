@@ -36,8 +36,8 @@ public class WorkerRegistrationBuilder {
     return this;
   }
 
-  public WorkerRegistrationBuilder lockTime(int lockTime) {
-    registration.setLockTime(lockTime);
+  public WorkerRegistrationBuilder lockDuration(long lockDuration) {
+    registration.setLockDuration(lockDuration);
     return this;
   }
 

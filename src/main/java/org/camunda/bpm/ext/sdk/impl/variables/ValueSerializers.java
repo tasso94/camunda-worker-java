@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.camunda.bpm.engine.impl.core.variable.VariableMapImpl;
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.impl.VariableMapImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
 

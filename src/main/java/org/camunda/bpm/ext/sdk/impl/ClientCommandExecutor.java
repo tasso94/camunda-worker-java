@@ -15,6 +15,7 @@ package org.camunda.bpm.ext.sdk.impl;
 import java.io.IOException;
 
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
@@ -27,16 +28,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ClientCommandExecutor {
 
-  protected CloseableHttpClient httpClient;
-  protected ObjectMapper objectMapper;
   protected String endpointUrl;
   protected String clientId;
+  protected long asyncResponseTimeout;
+  protected int maxTasks;
+
+  protected CloseableHttpClient httpClient;
+  protected ObjectMapper objectMapper;
   protected ValueSerializers valueSerializers;
 
-  public ClientCommandExecutor(CloseableHttpClient client, String endpointUrl, String clientId, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
-    this.httpClient = client;
+  public ClientCommandExecutor(String endpointUrl, String clientId, long asyncResponseTimeout, int maxTasks, CloseableHttpClient client, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
     this.endpointUrl = endpointUrl;
     this.clientId = clientId;
+    this.asyncResponseTimeout = asyncResponseTimeout;
+    this.maxTasks = maxTasks;
+
+    this.httpClient = client;
     this.objectMapper = objectMapper;
     this.valueSerializers = valueSerializers;
   }
@@ -44,20 +51,26 @@ public class ClientCommandExecutor {
   public <T> T executePost(String url, ClientPostComand<T> cmd) {
     HttpPost httpPost = new HttpPost(sanitizeUrl(endpointUrl, url));
     httpPost.addHeader("Content-Type", "application/json");
-    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers);
+    ClientCommandContext clientCommandContext = new ClientCommandContext(clientId, asyncResponseTimeout, maxTasks, httpClient, objectMapper, valueSerializers);
     return cmd.execute(clientCommandContext, httpPost);
   }
 
   public <T> T executePostMultipart(String url, ClientPostMultipartComand<T> cmd) {
     HttpPost httpPost = new HttpPost(sanitizeUrl(endpointUrl, url));
-    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers);
+    ClientCommandContext clientCommandContext = new ClientCommandContext(clientId, asyncResponseTimeout, maxTasks, httpClient, objectMapper, valueSerializers);
     return cmd.execute(clientCommandContext, httpPost);
   }
 
   public void executeDelete(String url) {
     HttpDelete delete = new HttpDelete(sanitizeUrl(endpointUrl, url));
-    new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers)
+    new ClientCommandContext(clientId, asyncResponseTimeout, 10, httpClient, objectMapper, valueSerializers)
       .execute(delete);
+  }
+
+  public <T> T executeGet(String url, ClientGetComand<T> cmd) {
+    HttpGet httpGet = new HttpGet(sanitizeUrl(endpointUrl, url));
+    ClientCommandContext clientCommandContext = new ClientCommandContext(clientId, asyncResponseTimeout, maxTasks, httpClient, objectMapper, valueSerializers);
+    return cmd.execute(clientCommandContext, httpGet);
   }
 
   private String sanitizeUrl(String baseUrl, String relativeUrl) {

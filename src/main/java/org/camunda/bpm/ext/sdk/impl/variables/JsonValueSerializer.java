@@ -14,7 +14,7 @@ package org.camunda.bpm.ext.sdk.impl.variables;
 
 import java.io.StringWriter;
 
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
 import org.camunda.spin.plugin.variable.SpinValues;

@@ -30,13 +30,13 @@ public class Consumer {
 
     WorkerRegistration registration = client.registerWorker()
       .topicName("orderProcess:payment")
-      .lockTime(5000)
+      .lockDuration(5000)
       .worker(new Worker() {
 
         public void doWork(TaskContext taskContext) {
 
 //          if(new Date().getTime() % 13 == 0) {
-//            taskContext.taskFailed("reserveOrderItems failed");
+//            taskContext.handleFailure("reserveOrderItems failed");
 //            System.out.println("Task failed");
 //          }
 //          else {

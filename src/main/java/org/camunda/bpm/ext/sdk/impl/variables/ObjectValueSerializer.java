@@ -18,8 +18,8 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.camunda.bpm.engine.impl.core.variable.type.ObjectTypeImpl;
-import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.impl.type.ObjectTypeImpl;
+import org.camunda.bpm.engine.variable.impl.value.UntypedValueImpl;
 import org.camunda.bpm.engine.impl.util.IoUtil;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.type.ValueType;
