@@ -18,6 +18,7 @@ public class DeploymentDto {
 
   protected String id;
   protected String name;
+  protected String source;
   protected Date deploymentTime;
 
   public DeploymentDto() {
@@ -29,6 +30,10 @@ public class DeploymentDto {
 
   public String getName() {
     return name;
+  }
+  
+  public String getSource() {
+	  return source;
   }
 
   public Date getDeploymentTime() {

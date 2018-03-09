@@ -48,12 +48,14 @@ public class WorkerIntegrationTests {
 
     DeploymentDto deployment = client.createDeployment()
       .name("testDeployment")
+      .source("WorkerIntegrationTests")
       .enableDuplicateFiltering()
       .classPathResource("org/camunda/bpm/ext/worker/test/oneTaskProcess.bpmn")
       .deploy();
 
     client.deleteDeployment(deployment.getId(), true);
 
+    Assert.assertEquals(deployment.getSource(), "WorkerIntegrationTests");
   }
 
   @Test

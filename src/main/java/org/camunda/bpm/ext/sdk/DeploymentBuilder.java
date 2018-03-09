@@ -43,6 +43,11 @@ public class DeploymentBuilder {
     requestBuilder.addTextBody("deployment-name", deploymentName);
     return this;
   }
+  
+  public DeploymentBuilder source(String deploymentSource) {
+	    requestBuilder.addTextBody("deployment-source", deploymentSource);
+	    return this;
+  }
 
   public DeploymentBuilder classPathResource(String classpathResource) {
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
