@@ -42,6 +42,7 @@ public class ValueSerializers {
     putSerializer(new DateValueSerializer());
     putSerializer(new DoubleValueSerializer());
     putSerializer(new IntegerValueSerializer());
+    putSerializer(new LongValueSerializer());
     putSerializer(new ShortValueSerializer());
     putSerializer(new NullValueSerializer());
     putSerializer(new BytesValueSerializer());
