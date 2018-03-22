@@ -38,10 +38,12 @@ public class FetchAndLockTasksRunnable implements Runnable {
 
   protected WorkerManager workerManager;
   protected ClientCommandExecutor commandExecutor;
-
-  public FetchAndLockTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor) {
+  protected BackoffStrategy backoffStrategy;
+  
+  public FetchAndLockTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor, BackoffStrategy backoffStrategy) {
     this.workerManager = workerManager;
     this.commandExecutor = commandExecutor;
+    this.backoffStrategy = backoffStrategy;
   }
 
   public void run() {
@@ -77,22 +79,40 @@ public class FetchAndLockTasksRunnable implements Runnable {
       }
 
     }
+    
+    int tasksAcquired = 0;
 
     try {
       fetchAndLock(request, workerMap);
     } catch(Exception e) {
       LOG.exceptionDuringPoll(e);
     }
+    
+    if(tasksAcquired == 0) {
+        try {
+          // back-off
+          backoffStrategy.run();
+        } catch(InterruptedException e) {
+          e.printStackTrace();
+        }
+    } else {
+        backoffStrategy.reset();
+    }
   }
 
-  private void fetchAndLock(final FetchAndLockRequestDto request, final Map<String, Worker> workerMap) {
-    commandExecutor.executePost("/external-task/fetchAndLock", (ClientPostComand<Void>) (ClientCommandContext ctc, HttpPost post) -> {
+  private int fetchAndLock(final FetchAndLockRequestDto request, final Map<String, Worker> workerMap) {
+	if (workerMap.size() == 0){
+		return 0;
+  	}
+	
+    return commandExecutor.executePost("/external-task/fetchAndLock", (ClientPostComand<Integer>) (ClientCommandContext ctc, HttpPost post) -> {
       request.setWorkerId(ctc.getClientId());
       request.setMaxTasks(ctc.getMaxTasks());
       request.setAsyncResponseTimeout(ctc.getAsyncResponseTimeout());
 
       post.setEntity(ctc.writeObject(request));
 
+      int tasksAcquired = 0;
       try {
         HttpResponse response = ctc.execute(post);
         LockedExternalTaskDto[] lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedExternalTaskDto[].class);
@@ -102,12 +122,13 @@ public class FetchAndLockTasksRunnable implements Runnable {
 
           WorkerTask task = WorkerTask.from(lockedExternalTaskDto, commandExecutor, workerMap.get(lockedExternalTaskDto.getTopicName()));
           workerManager.execute(task);
+          tasksAcquired++;
         }
       } catch (CamundaClientException e) {
         LOG.unableToPoll(e);
       }
 
-      return null;
+      return tasksAcquired;
     });
   }
 
@@ -117,6 +138,8 @@ public class FetchAndLockTasksRunnable implements Runnable {
     synchronized (workerManager.getRegistrations()) {
       workerManager.getRegistrations().notifyAll();
     }
+    // or doing backoff
+    backoffStrategy.stopWait();
   }
 
 }

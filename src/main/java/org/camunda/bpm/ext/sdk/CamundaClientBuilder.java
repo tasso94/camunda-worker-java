@@ -18,6 +18,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
+import org.camunda.bpm.ext.sdk.impl.workers.BackoffStrategy;
+import org.camunda.bpm.ext.sdk.impl.workers.SimpleBackoffStrategy;
 import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
 
 import java.net.InetAddress;
@@ -41,6 +43,7 @@ public class CamundaClientBuilder {
 
   protected int numOfWorkerThreads = 4;
   protected int queueSize = 25;
+  protected BackoffStrategy backoffStrategy;
 
   protected CloseableHttpClient httpClient;
   protected ClientCommandExecutor clientCommandExecutor;
@@ -93,6 +96,7 @@ public class CamundaClientBuilder {
 
   protected void init() {
     initClientId();
+    initBackoffStrategy();
     initObjectMapper();
     initValueSerializers();
     initHttpClient();
@@ -104,6 +108,12 @@ public class CamundaClientBuilder {
     if(valueSerializers == null) {
       valueSerializers = new ValueSerializers();
     }
+  }
+  
+  protected void initBackoffStrategy() {
+	if(backoffStrategy == null) {
+	  backoffStrategy = new SimpleBackoffStrategy();
+	}
   }
 
   protected void initClientId() {
@@ -128,7 +138,7 @@ public class CamundaClientBuilder {
 
   protected void initWorkerManager() {
     if(this.workerManager == null) {
-      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize);
+      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize, backoffStrategy);
     }
   }
 

@@ -38,8 +38,9 @@ public class WorkerManager {
 
   protected ThreadPoolExecutor workerThreadPool;
 
-  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize) {
-    this.fetcherRunnable = new FetchAndLockTasksRunnable(this, commandExecutor);
+  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize, BackoffStrategy backoffStrategy) {
+    
+	this.fetcherRunnable = new FetchAndLockTasksRunnable(this, commandExecutor, backoffStrategy);
 
     ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(queueSize);
 
